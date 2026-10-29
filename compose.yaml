@@ -1,0 +1,35 @@
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --requirepass
+      - ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$${REDIS_PASSWORD}\" redis-cli ping | grep -q PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+
+  web:
+    image: kr2-app:1.0
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8003:8003"
+    environment:
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      STUDENT: Logvinov
+    depends_on:
+      redis:
+        condition: service_healthy
+
+volumes:
+  redis_data:

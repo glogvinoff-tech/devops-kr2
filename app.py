@@ -1,3 +1,4 @@
+# KR2: Logvinov
 import os
 import socket
 
